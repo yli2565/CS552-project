@@ -113,12 +113,12 @@ module InstructionDecoder (
          Opcode == `SLBI || Opcode == `LBI) ? 2'b10 :
         (Opcode == `ADDI || Opcode == `SUBI || 
          Opcode == `XORI || Opcode == `ANDNI || 
-         Opcode == `BEQZ || Opcode == `BNEZ || 
-         Opcode == `BLTZ || Opcode == `BGEZ || 
          Opcode == `ST || Opcode == `LD || 
          Opcode == `STU || Opcode == `ROLI || 
          Opcode == `SLLI || Opcode == `RORI || 
          Opcode == `SRLI) ? 2'b01 :
+        (Opcode == `BEQZ || Opcode == `BNEZ || 
+         Opcode == `BLTZ || Opcode == `BGEZ) ? 2'b11 :
         2'b00;
 
     assign ZeroExt = (Opcode == `XORI || Opcode == `ANDNI || Opcode == `SLBI);
