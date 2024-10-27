@@ -1,9 +1,19 @@
-          // Test provided by Karu 
-          // btr_0.asm
+          // Original test: ./bolanows/hw4/problem6/jalr_0.asm
+          // Author: bolanows
+          // Test source code follows
           
-          // Test extreme case low
-0000 9100 slbi r1, 0
-0002 9100 slbi r1, 0
-0004 c904 btr r1, r1
-0006 0000 halt
-          		
+          
+          // Makes sure the jalr can return to where jal jumped from
+          
+0000 0800 Nop
+0002 300a JAL 10 // Should jump to Target_A, PC = 14, and store PC = 4
+0004 0800 Nop // PC = 4 Target_B
+0006 0000 Halt
+0008 0800 Nop
+000a 0800 Nop
+000c 0800 Nop
+000e 0800 Nop // PC = 14 Target_A
+0010 3f00 JALR r7, 0 // Should jump to Target_B, PC = 4
+0012 0800 Nop
+0014 0800 Nop
+0016 0000 Halt
