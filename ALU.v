@@ -43,14 +43,16 @@ module ALU (
     assign B = InvB ? ~OprB : OprB;
 
     // Operation results
+    wire [3:0] SRAmount = B[3:0]; // Shift/Rotate amount
+
     wire [15:0] add_result = A + B;
     wire [15:0] xor_result = A ^ B;
     wire [15:0] and_result = A & B;
     wire [15:0] or_result = A | B;
-    wire [15:0] rol_result = A << B | A >> (16 - B);
-    wire [15:0] sll_result = A << B;
-    wire [15:0] ror_result = A >> 1 | A << (16 - B);
-    wire [15:0] srl_result = A >> B;
+    wire [15:0] rol_result = A << SRAmount | A >> (16 - SRAmount);
+    wire [15:0] sll_result = A << SRAmount;
+    wire [15:0] ror_result = A >> SRAmount | A << (16 - SRAmount);
+    wire [15:0] srl_result = A >> SRAmount;
     wire [15:0] inv_result = {A[0],A[1],A[2],A[3],A[4],A[5],A[6],A[7],A[8],A[9],A[10],A[11],A[12],A[13],A[14],A[15]};
 
     // Main ALU output multiplexer
