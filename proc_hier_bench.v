@@ -153,8 +153,25 @@ module proc_hier_bench();
    // Is processor halted (1 bit signal)
    
    /* Add anything else you want here */
-
+   wire [15:0] RegFileData [7:0];
    
+   // assign RegFileData[0][0] = DUT.p0.regFile_.reg_array_0.dff_array[0].state;
+   // assign RegFileData[0][1] = DUT.p0.regFile_.reg_array_0.dff_array[1].state;
+   // assign RegFileData[0][2] = DUT.p0.regFile_.reg_array_0.dff_array[2].state;
+   genvar i, j;
+   generate
+      for(i = 0; i < 16; i = i + 1) begin : connect_regs
+         // Connect all bits of register i
+         assign RegFileData[0][i] = DUT.p0.regFile_.reg_array_0.dff_array[i].state;
+         assign RegFileData[1][i] = DUT.p0.regFile_.reg_array_1.dff_array[i].state;
+         assign RegFileData[2][i] = DUT.p0.regFile_.reg_array_2.dff_array[i].state;
+         assign RegFileData[3][i] = DUT.p0.regFile_.reg_array_3.dff_array[i].state;
+         assign RegFileData[4][i] = DUT.p0.regFile_.reg_array_4.dff_array[i].state;
+         assign RegFileData[5][i] = DUT.p0.regFile_.reg_array_5.dff_array[i].state;
+         assign RegFileData[6][i] = DUT.p0.regFile_.reg_array_6.dff_array[i].state; 
+         assign RegFileData[7][i] = DUT.p0.regFile_.reg_array_7.dff_array[i].state;
+      end
+   endgenerate
 endmodule
 `default_nettype wire
 // DUMMY LINE FOR REV CONTROL :0:

@@ -105,16 +105,12 @@ module proc (/*AUTOARG*/
 
    assign PCplus2 = PC + 16'd2; // TODO: replace this
 
-   always @(clk or rst) begin
-      if (Halt == 1'b0) begin
-         if (rst == 1'b1) begin
-            PC <= 16'b0;
-         end
-         else begin
-            if (clk == 1'b1) begin
-               PC <= PCNext;
-            end
-         end
+   always @(posedge clk or posedge rst) begin
+      if (rst) begin
+         PC <= 16'b0;
+      end
+      else if (!Halt) begin
+         PC <= PCNext;
       end
    end
 
@@ -143,15 +139,18 @@ module proc (/*AUTOARG*/
    wire [15:0] I2_Imm;
    wire [15:0] J_Imm;
    // select signed extend or zero extend
-   MUX_2x16 I1_Imm_Mux(.out(I1_Imm), .in0({{11{Instr4_0[4]}}, Instr4_0}), .in1({11'b0, Instr4_0}), .ctrl(ZeroExt));
-   MUX_2x16 I2_Imm_Mux(.out(I2_Imm), .in0({{8{Instr7_0[7]}}, Instr7_0}), .in1({8'b0, Instr7_0}), .ctrl(ZeroExt));
+   MUX_2x16 I1_Imm_Mux(.out(I1_Imm), .in0({{8{Instr7_0[7]}}, Instr7_0}), .in1({8'b0, Instr7_0}), .ctrl(ZeroExt));
+   MUX_2x16 I2_Imm_Mux(.out(I2_Imm), .in0({{11{Instr4_0[4]}}, Instr4_0}), .in1({11'b0, Instr4_0}), .ctrl(ZeroExt));
    // J is always signed extend
    assign J_Imm={{5{Instr10_0[10]}}, Instr10_0};
 
    // EX stage
 
    // OprB select
-   MUX_4x16 OprB_Mux(.out(OprB), .in0(Rt), .in1(I2_Imm), .in2(I1_Imm), .in3(16'b0), .ctrl(BSrc));
+   assign Imm5=I2_Imm;
+   assign Imm8=I1_Imm;
+
+   MUX_4x16 OprB_Mux(.out(OprB), .in0(Rt), .in1(Imm5), .in2(Imm8), .in3(16'b0), .ctrl(BSrc));
 
    // ALU Control part
    ALU_Operation ALU_Operation_(.ALUOperation(ALUOperation), .NegA(NegA), .InvB(InvB), .ALUOpr(ALUOpr), .OpcodeExtention(Instr1_0));
