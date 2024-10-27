@@ -1,16 +1,21 @@
-          // Original test: ./hartung/hw4/problem6/andn_0.asm
-          // Author: hartung
-          // Test source code follows
+          // Test provided by Karu, comments updated by Matt S.
+          // beqz test.
           
+0000 c101 lbi r1, 1            //set r1 to a constant 1
+0002 c202 lbi r2, 2	         //set r2 to a constant 2
+0004 c401 lbi r4, 1            //set r4 to a constant 1, r4 will be used to indicate our program can be execate currectly or not
+0006 e94c slt r3, r1, r2       //set the r3 if r1 is less than r2, it will be set here
+0008 6302 beqz r3, .label1     //if r3 is zero, program will branch to label1, but since r3 == 1 from the previous line, the branch should not be taken
+000a 4481 addi r4, r4, 1       //if the beqz above didn't branch, r4 will be added 1
           
-          //This tests the operation of ANDN
-          //and dependency of Rt on the result
-          //of the previous operation.
+000c      .label1:
+000c c102 lbi r1, 2            //set r1 to a constant 2
+000e c201 lbi r2, 1	         //set r2 to a constant 1
+0010 e94c slt r3, r1,r2        //set the r3 if r1 is less than r2, it won't be set here
+0012 6304 beqz r3, .label2     //if r3 is zero, program will branch to label2 -- since r3 == 0 from the previous line, the branch will be taken
+0014 4484 addi r4, r4, 4	     //if the beqz above didn't branch, r4 will be added 4
+0016 0000 halt
           
-0000 c1ff lbi  r1, 0xff   //expected r1=0xffff
-0002 c2f0 lbi  r2, 0xf0   //expected r2=0xfff0
-0004 d94f andn r3, r1, r2 //expected r3=0x000f
-0006 db53 andn r4, r3, r2 //expected r4=0x000f
-0008 dc77 andn r5, r4, r3 //expected r5=0x0000
-000a 0000 halt
-          
+0018      .label2:
+0018 4482 addi r4, r4, 2       //if the beqz above brance, r4 will be added 2
+001a 0000 halt
