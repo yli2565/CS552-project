@@ -9,16 +9,16 @@ module BrchCnd (
 );
 
     // Intermediate wires for individual condition results
-    wire seq_result = {15'b0, ZF};
-    wire slt_result = {15'b0, (SF ^ OF)};
-    wire sle_result = {15'b0, (SF ^ OF) | ZF};
-    wire sco_result = {15'b0, CF};
+    wire [15:0] seq_result = {15'b0, ZF};
+    wire [15:0] slt_result = {15'b0, ~(SF ^ OF) & ~ZF};
+    wire [15:0] sle_result = {15'b0, ~(SF ^ OF)};
+    wire [15:0] sco_result = {15'b0, CF};
 
     // Branch condition results
     wire beqz_cond = ZF;
     wire bnez_cond = ~ZF;
-    wire bltz_cond = SF ^ OF;
-    wire bgez_cond = ~(SF ^ OF);
+    wire bltz_cond = ~(SF ^ OF) & ~ZF;
+    wire bgez_cond = (SF ^ OF) | ZF;
     wire jump_cond = 1'b1;
 
     // Multiplexer for CmpResult
