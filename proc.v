@@ -35,7 +35,8 @@ module proc (/*AUTOARG*/
    /* your code here -- should include instantiations of fetch, decode, execute, mem and wb modules */
 
    // Main Control signals
-   wire MemWrt;
+   // wire MemWrt;
+   wire [1:0] MemRW;
    wire ALUJmp;
    wire ImmSrc;
    wire RegWrt;
@@ -130,7 +131,7 @@ module proc (/*AUTOARG*/
    wire [10:0] Instr10_0 = Instr[10:0];
    wire [1:0] Instr1_0 = Instr[1:0];
 
-   InstructionDecoder InstructionDecoder_(.MemWrt(MemWrt),.ALUJmp(ALUJmp),.SLBIshift8(SLBIshift8), .BrchCtrl(BrchCtrl), .ImmSrc(ImmSrc),.RegWrt(RegWrt),.BSrc(BSrc),.ZeroExt(ZeroExt),.ALUOpr(ALUOpr),.RegSrc(RegSrc),.RegDst(RegDst),.Halt(Halt),.Opcode(Instr15_11));
+   InstructionDecoder InstructionDecoder_(.MemRW(MemRW),.ALUJmp(ALUJmp),.SLBIshift8(SLBIshift8), .BrchCtrl(BrchCtrl), .ImmSrc(ImmSrc),.RegWrt(RegWrt),.BSrc(BSrc),.ZeroExt(ZeroExt),.ALUOpr(ALUOpr),.RegSrc(RegSrc),.RegDst(RegDst),.Halt(Halt),.Opcode(Instr15_11));
 
    // RegFile part
    regFile regFile_(.read1Data(Rs), .read2Data(Rt), .writeData(WrtData), .writeEn(RegWrt), .writeRegSel(WrtReg), .read1RegSel(Instr10_8), .read2RegSel(Instr7_5), .clk(clk), .rst(rst));
@@ -164,7 +165,7 @@ module proc (/*AUTOARG*/
    BrchCnd BrchCnd_(.BrchOrJmpSig(BrchOrJmpSig), .CmpResult(CmpResult), .BrchCtrl(BrchCtrl), .SF(SF), .ZF(ZF), .OF(OF), .CF(CF));
 
    // Main memory part
-   memory2c Dmem (.data_out(MemOut), .data_in(Rt), .addr(ALUOut), .enable(~Halt), .wr(MemWrt), .createdump(Halt), .clk(clk), .rst(rst));
+   memory2c Dmem (.data_out(MemOut), .data_in(Rt), .addr(ALUOut), .enable(~Halt & (MemRW[0]|MemRW[1])), .wr(MemRW[1]), .createdump(Halt), .clk(clk), .rst(rst));
 
    // WB stage
    MUX_4x16 WrtData_Mux(.out(WrtData), .in0(PCplus2), .in1(MemOut), .in2(ALUOut), .in3(CmpResult), .ctrl(RegSrc));

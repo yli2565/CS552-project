@@ -1,5 +1,5 @@
 module InstructionDecoder (
-    output reg MemWrt,
+    output reg [1:0] MemRW,
     output reg ALUJmp,
     output reg SLBIshift8,
     output reg [3:0] BrchCtrl,
@@ -22,7 +22,7 @@ module InstructionDecoder (
 
     always @(*) begin
         // Default values (most common cases)
-        MemWrt = 1'b0;
+        MemRW = 2'b00;
         ALUJmp = 1'b0;
         SLBIshift8 = 1'b0;
         NegAProto = 1'b0;
@@ -39,12 +39,10 @@ module InstructionDecoder (
         case(Opcode)
             5'b00000: begin // HALT
                 RegWrt = 1'b0;
-                MemWrt = 1'b0;
                 Halt = 1'b1;
             end
             5'b00001: begin // NOP
                 RegWrt = 1'b0;
-                MemWrt = 1'b0;
             end
             5'b00100: begin // J
                 RegWrt = 1'b0;
@@ -134,12 +132,13 @@ module InstructionDecoder (
                 RegWrt = 1'b0;
                 BSrc = 2'b01;
                 ALUOperationProto = 4'b0110;
-                MemWrt = 1'b1;
+                MemRW = 2'b01;
             end
             5'b10001: begin // LD
                 RegDst = 2'b00;
                 BSrc = 2'b01;
                 ALUOperationProto = 4'b0110;
+                MemRW = 2'b10;
                 RegSrc = 2'b01;
             end
             5'b10010: begin // SLBI
@@ -154,7 +153,7 @@ module InstructionDecoder (
                 RegDst = 2'b01;
                 BSrc = 2'b01;
                 ALUOperationProto = 4'b0110;
-                MemWrt = 1'b1;
+                MemRW = 2'b01;
                 RegSrc = 2'b10;
             end
             5'b10100: begin // ROLI
