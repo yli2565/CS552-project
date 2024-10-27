@@ -1,19 +1,43 @@
-          // Original test: ./bolanows/hw4/problem6/jalr_0.asm
-          // Author: bolanows
+          // Original test: ./sadashiv/hw4/problem6/rol_2.asm
+          // Author: sadashiv
           // Test source code follows
           
           
-          // Makes sure the jalr can return to where jal jumped from
+          // Test for "ROL Rd, Rs, Rt"  {Rd <- Rs << (rotate) Rt (lowest 4 bits)}//
+          // This test check for all possible cases of rotate left from 0 -15 //
           
-0000 0800 Nop
-0002 300a JAL 10 // Should jump to Target_A, PC = 14, and store PC = 4
-0004 0800 Nop // PC = 4 Target_B
-0006 0000 Halt
-0008 0800 Nop
-000a 0800 Nop
-000c 0800 Nop
-000e 0800 Nop // PC = 14 Target_A
-0010 3f00 JALR r7, 0 // Should jump to Target_B, PC = 4
-0012 0800 Nop
-0014 0800 Nop
-0016 0000 Halt
+0000 c1a1 lbi r1,0xA1
+0002 9197 slbi r1, 0x97	// r1 = 0xA197
+0004 c200 lbi r2, 0x0	// rotate 0 times
+0006 d150 rol r4, r1, r2	// No change in r1
+0008 c251 lbi r2, 0x51	// rotate 1 time
+000a d150 rol r4, r1, r2  // r4 = 0x432F
+000c c262 lbi r2, 0x62	// rotate 2 times
+000e d150 rol r4, r1, r2  // r4 = 0x865E
+0010 c2a3 lbi r2, 0xA3	// rotate 3 times
+0012 d150 rol r4, r1, r2  // r4 = 0x0CBD
+0014 c294 lbi r2, 0x94	// rotate 4 times
+0016 d150 rol r4, r1, r2  // r4 = 0x197A
+0018 c205 lbi r2, 0x05	// rotate 5 times
+001a d150 rol r4, r1, r2  // r4 = 0x32F4
+001c c2e6 lbi r2, 0xE6	// rotate 6 times
+001e d150 rol r4, r1, r2  // r4 = 0x65E8
+0020 c227 lbi r2, 0x27	// rotate 7 times
+0022 d150 rol r4, r1, r2  // r4 = 0xCBD0
+0024 c288 lbi r2, 0x88	// rotate 8 times
+0026 d150 rol r4, r1, r2  // r4 = 0x971A
+0028 c239 lbi r2, 0x39	// rotate 9 times
+002a d150 rol r4, r1, r2  // r4 = 0x2F43
+002c c26a lbi r2, 0x6A	// rotate 10 times
+002e d150 rol r4, r1, r2  // r4 = 0x5E86
+0030 c24b lbi r2, 0x4B	// rotate 11 times
+0032 d150 rol r4, r1, r2  // r4 = 0xBD0C
+0034 c29c lbi r2, 0x9C	// rotate 12 times
+0036 d150 rol r4, r1, r2  // r4 = 0x7A19
+0038 c24d lbi r2, 0x4D	// rotate 13 times
+003a d150 rol r4, r1, r2  // r4 = 0xF432
+003c c29e lbi r2, 0x9E	// rotate 14 times
+003e d150 rol r4, r1, r2  // r4 = 0xE865
+0040 c2ff lbi r2, 0xFF	// rotate 15 times
+0042 d150 rol r4, r1, r2  // r4 = 0xD0CB
+0044 0000 halt
