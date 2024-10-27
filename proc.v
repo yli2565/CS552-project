@@ -99,6 +99,8 @@ module proc (/*AUTOARG*/
    wire [2:0] WrtReg;
 
    // IF stage
+   assign RegBasedAddr = ALUOut;
+   
    MUX_2x16 BranchOrJmpMux(.out(PCBasedBrchOrJmpTarget), .in0(PCplus2), .in1(PCBasedAddr), .ctrl(BrchOrJmpSig));
 
    MUX_2x16 PCMux(.out(PCNext), .in0(PCBasedBrchOrJmpTarget), .in1(RegBasedAddr), .ctrl(ALUJmp));
