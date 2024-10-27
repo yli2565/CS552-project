@@ -62,7 +62,6 @@ module proc (/*AUTOARG*/
    // PC related
    reg [15:0] PC;
    wire [15:0] PCplus2;
-   wire [15:0] PCDistDiv2;
    wire [15:0] PCDist;
    wire [15:0] PCBasedAddr;
    wire [15:0] PCBasedBrchOrJmpTarget;
@@ -153,9 +152,7 @@ module proc (/*AUTOARG*/
    // calculate PCBasedAddr
    assign BrchDist = I1_Imm;
    assign JTypeDist = J_Imm;
-   MUX_2x16 PCDistDiv2_Mux(.out(PCDistDiv2), .in0(BrchDist), .in1(JTypeDist), .ctrl(ImmSrc));
-
-   assign PCDist = PCDistDiv2 << 1; 
+   MUX_2x16 PCDist_Mux(.out(PCDist), .in0(BrchDist), .in1(JTypeDist), .ctrl(ImmSrc));
 
    assign PCBasedAddr = PCplus2 + PCDist;
 
