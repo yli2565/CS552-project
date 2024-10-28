@@ -100,7 +100,7 @@ module proc (/*AUTOARG*/
 
    // IF stage
    assign RegBasedAddr = ALUOut;
-   
+
    MUX_2x16 BranchOrJmpMux(.out(PCBasedBrchOrJmpTarget), .in0(PCplus2), .in1(PCBasedAddr), .ctrl(BrchOrJmpSig));
 
    MUX_2x16 PCMux(.out(PCNext), .in0(PCBasedBrchOrJmpTarget), .in1(RegBasedAddr), .ctrl(ALUJmp));
@@ -176,7 +176,7 @@ module proc (/*AUTOARG*/
    BrchCnd BrchCnd_(.BrchOrJmpSig(BrchOrJmpSig), .CmpResult(CmpResult), .BrchCtrl(BrchCtrl), .SF(SF), .ZF(ZF), .OF(OF), .CF(CF));
 
    // Main memory part
-   memory2c Dmem (.data_out(MemOut), .data_in(Rt), .addr(ALUOut), .enable(~Halt & (MemRW[0]|MemRW[1])), .wr(MemRW[1]), .createdump(Halt), .clk(clk), .rst(rst));
+   memory2c Dmem (.data_out(MemOut), .data_in(Rt), .addr(ALUOut), .enable(~Halt & (MemRW[1]|MemRW[0])), .wr(MemRW[0]), .createdump(Halt), .clk(clk), .rst(rst));
 
    // WB stage
    MUX_4x16 WrtData_Mux(.out(WrtData), .in0(PCplus2), .in1(MemOut), .in2(ALUOut), .in3(CmpResult), .ctrl(RegSrc));
