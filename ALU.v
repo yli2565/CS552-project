@@ -76,6 +76,9 @@ module ALU (
     assign SF = (ALUOperation === `ALU_NONE) ? 1'bz : flag_result[15];
     assign ZF = (ALUOperation === `ALU_NONE) ? 1'bz : (flag_result === 16'b0);
     assign OF = (ALUOperation === `ALU_NONE) ? 1'bz : (A[15] & B[15] & ~flag_result[15]) | (~A[15] & ~B[15] & flag_result[15]);
-    assign CF = (ALUOperation === `ALU_NONE) ? 1'bz : A[15] ^ B[15];
+
+    wire [16:0] extended_sum;
+    assign extended_sum = {1'b0,A} + {1'b0,B};
+    assign CF = (ALUOperation === `ALU_NONE) ? 1'bz : extended_sum[16];
 
 endmodule
