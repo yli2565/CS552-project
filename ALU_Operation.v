@@ -52,12 +52,12 @@ module ALU_Operation (
 
     // NegA logic
     wire neg_a_from_opr = ALUOpr[5];
-    wire neg_a_from_sub = (ALUOpr[3:0] == `ALU_R_ARITH && OpcodeExtention == 2'b01);
-    assign NegA = neg_a_from_opr || neg_a_from_sub;
+    wire neg_a_from_sub = (ALUOpr[3:0] == `ALU_R_ARITH & OpcodeExtention == 2'b01);
+    assign NegA = neg_a_from_opr | neg_a_from_sub;
 
     // InvB logic
     wire inv_b_from_opr = ALUOpr[4];
-    wire inv_b_from_andn = (ALUOpr[3:0] == `ALU_R_ARITH && OpcodeExtention == 2'b11);
-    assign InvB = inv_b_from_opr || inv_b_from_andn;
+    wire inv_b_from_andn = (ALUOpr[3:0] == `ALU_R_ARITH & OpcodeExtention == 2'b11);
+    assign InvB = inv_b_from_opr | inv_b_from_andn;
 
 endmodule

@@ -105,116 +105,116 @@ module InstructionDecoder (
     assign ALUOpr = {NegAProto, InvBProto, ALUOperationProto[3:0]};
 
     assign MemRW = 
-        (Opcode == `ST || Opcode == `STU) ? 2'b01 :
-        (Opcode == `LD) ? 2'b10 :
+        (Opcode === `ST | Opcode === `STU) ? 2'b01 :
+        (Opcode === `LD) ? 2'b10 :
         2'b00;
 
-    assign ALUJmp = (Opcode == `JR || Opcode == `JALR);
+    assign ALUJmp = (Opcode === `JR | Opcode === `JALR);
 
-    assign SLBIshift8 = (Opcode == `SLBI);
+    assign SLBIshift8 = (Opcode === `SLBI);
 
     assign BrchCtrl = 
-        (Opcode == `J || Opcode == `JAL) ? 4'b1000 :
-        (Opcode == `BEQZ) ? 4'b0100 :
-        (Opcode == `BNEZ) ? 4'b0101 :
-        (Opcode == `BLTZ) ? 4'b0110 :
-        (Opcode == `BGEZ) ? 4'b0111 :
-        (Opcode == `SEQ) ? 4'b0000 :
-        (Opcode == `SLT) ? 4'b0001 :
-        (Opcode == `SLE) ? 4'b0010 :
-        (Opcode == `SCO) ? 4'b0011 :
+        (Opcode === `J | Opcode === `JAL) ? 4'b1000 :
+        (Opcode === `BEQZ) ? 4'b0100 :
+        (Opcode === `BNEZ) ? 4'b0101 :
+        (Opcode === `BLTZ) ? 4'b0110 :
+        (Opcode === `BGEZ) ? 4'b0111 :
+        (Opcode === `SEQ) ? 4'b0000 :
+        (Opcode === `SLT) ? 4'b0001 :
+        (Opcode === `SLE) ? 4'b0010 :
+        (Opcode === `SCO) ? 4'b0011 :
         4'b0000;
 
-    assign ImmSrc = (Opcode == `J || Opcode == `JAL);
+    assign ImmSrc = (Opcode === `J | Opcode === `JAL);
 
     assign RegWrt = 
-        !(Opcode == `HALT || Opcode == `NOP || 
-          Opcode == `J || Opcode == `JR || 
-          Opcode == `BEQZ || Opcode == `BNEZ || 
-          Opcode == `BLTZ || Opcode == `BGEZ || 
-          Opcode == `ST);
+        !(Opcode === `HALT | Opcode === `NOP | 
+          Opcode === `J | Opcode === `JR | 
+          Opcode === `BEQZ | Opcode === `BNEZ | 
+          Opcode === `BLTZ | Opcode === `BGEZ | 
+          Opcode === `ST);
 
     assign BSrc = 
-        (Opcode == `JR || Opcode == `JALR || 
-         Opcode == `SLBI || Opcode == `LBI) ? 2'b10 :
-        (Opcode == `ADDI || Opcode == `SUBI || 
-         Opcode == `XORI || Opcode == `ANDNI || 
-         Opcode == `ST || Opcode == `LD || 
-         Opcode == `STU || Opcode == `ROLI || 
-         Opcode == `SLLI || Opcode == `RORI || 
-         Opcode == `SRLI) ? 2'b01 :
-        (Opcode == `BEQZ || Opcode == `BNEZ || 
-         Opcode == `BLTZ || Opcode == `BGEZ) ? 2'b11 :
+        (Opcode === `JR | Opcode === `JALR | 
+         Opcode === `SLBI | Opcode === `LBI) ? 2'b10 :
+        (Opcode === `ADDI | Opcode === `SUBI | 
+         Opcode === `XORI | Opcode === `ANDNI | 
+         Opcode === `ST | Opcode === `LD | 
+         Opcode === `STU | Opcode === `ROLI | 
+         Opcode === `SLLI | Opcode === `RORI | 
+         Opcode === `SRLI) ? 2'b01 :
+        (Opcode === `BEQZ | Opcode === `BNEZ | 
+         Opcode === `BLTZ | Opcode === `BGEZ) ? 2'b11 :
         2'b00;
 
-    assign ZeroExt = (Opcode == `XORI || Opcode == `ANDNI || Opcode == `SLBI);
+    assign ZeroExt = (Opcode === `XORI | Opcode === `ANDNI | Opcode === `SLBI);
 
 assign ALUOperationProto = 
     // Addition operations
-    (Opcode == `JR || Opcode == `JALR || 
-     Opcode == `ADDI || Opcode == `SUBI || 
-     Opcode == `ST || Opcode == `LD || 
-     Opcode == `STU) ? `ALU_ADD :
+    (Opcode === `JR | Opcode === `JALR | 
+     Opcode === `ADDI | Opcode === `SUBI | 
+     Opcode === `ST | Opcode === `LD | 
+     Opcode === `STU) ? `ALU_ADD :
     
     // Bitwise operations
-    (Opcode == `XORI) ? `ALU_XOR :
-    (Opcode == `ANDNI) ? `ALU_AND :
+    (Opcode === `XORI) ? `ALU_XOR :
+    (Opcode === `ANDNI) ? `ALU_AND :
     
     // Compare operations
-    (Opcode == `BEQZ || Opcode == `BNEZ || 
-     Opcode == `BLTZ || Opcode == `BGEZ || 
-     Opcode == `SEQ || Opcode == `SLT || 
-     Opcode == `SLE || Opcode == `SCO) ? `ALU_CMP :
+    (Opcode === `BEQZ | Opcode === `BNEZ | 
+     Opcode === `BLTZ | Opcode === `BGEZ | 
+     Opcode === `SEQ | Opcode === `SLT | 
+     Opcode === `SLE | Opcode === `SCO) ? `ALU_CMP :
     
     // OR operation (for SLBI)
-    (Opcode == `SLBI) ? `ALU_OR :
+    (Opcode === `SLBI) ? `ALU_OR :
     
     // Shift and rotate operations
-    (Opcode == `ROLI) ? `ALU_ROL :
-    (Opcode == `SLLI) ? `ALU_SLL :
-    (Opcode == `RORI) ? `ALU_ROR :
-    (Opcode == `SRLI) ? `ALU_SRL :
+    (Opcode === `ROLI) ? `ALU_ROL :
+    (Opcode === `SLLI) ? `ALU_SLL :
+    (Opcode === `RORI) ? `ALU_ROR :
+    (Opcode === `SRLI) ? `ALU_SRL :
     
     // Special operations
-    (Opcode == `LBI) ? `ALU_BYPASS :
-    (Opcode == `BTR) ? `ALU_INV :
+    (Opcode === `LBI) ? `ALU_BYPASS :
+    (Opcode === `BTR) ? `ALU_INV :
     
     // Not determined operations
-    (Opcode == `ROL) ? `ALU_R_ROT :
-    (Opcode == `ADD) ? `ALU_R_ARITH :
+    (Opcode === `ROL) ? `ALU_R_ROT :
+    (Opcode === `ADD) ? `ALU_R_ARITH :
     
     // Default: No operation
     `ALU_NONE;
 
     assign RegSrc = 
-        (Opcode == `JAL || Opcode == `JALR) ? 2'b00 :
-        (Opcode == `LD) ? 2'b01 :
-        (Opcode == `SEQ || Opcode == `SLT || 
-         Opcode == `SLE || Opcode == `SCO) ? 2'b11 :
+        (Opcode === `JAL | Opcode === `JALR) ? 2'b00 :
+        (Opcode === `LD) ? 2'b01 :
+        (Opcode === `SEQ | Opcode === `SLT | 
+         Opcode === `SLE | Opcode === `SCO) ? 2'b11 :
         2'b10;
 
     assign RegDst = 
-        (Opcode == `ADDI || Opcode == `SUBI || 
-         Opcode == `XORI || Opcode == `ANDNI || 
-         Opcode == `LD || Opcode == `ROLI || 
-         Opcode == `SLLI || Opcode == `RORI || 
-         Opcode == `SRLI) ? 2'b00 :
-        (Opcode == `SLBI || Opcode == `STU || 
-         Opcode == `LBI) ? 2'b01 :
-        (Opcode == `BTR || Opcode == `ROL || 
-         Opcode == `ADD || Opcode == `SEQ || 
-         Opcode == `SLT || Opcode == `SLE || 
-         Opcode == `SCO) ? 2'b10 :
-        (Opcode == `JAL || Opcode == `JALR) ? 2'b11 :
+        (Opcode === `ADDI | Opcode === `SUBI | 
+         Opcode === `XORI | Opcode === `ANDNI | 
+         Opcode === `LD | Opcode === `ROLI | 
+         Opcode === `SLLI | Opcode === `RORI | 
+         Opcode === `SRLI) ? 2'b00 :
+        (Opcode === `SLBI | Opcode === `STU | 
+         Opcode === `LBI) ? 2'b01 :
+        (Opcode === `BTR | Opcode === `ROL | 
+         Opcode === `ADD | Opcode === `SEQ | 
+         Opcode === `SLT | Opcode === `SLE | 
+         Opcode === `SCO) ? 2'b10 :
+        (Opcode === `JAL | Opcode === `JALR) ? 2'b11 :
         2'bzz;
 
     assign NegAProto = 
-        (Opcode == `SUBI || Opcode == `BEQZ || 
-         Opcode == `BNEZ || Opcode == `BLTZ || 
-         Opcode == `BGEZ || Opcode == `SEQ || 
-         Opcode == `SLT || Opcode == `SLE);
+        (Opcode === `SUBI | Opcode === `BEQZ | 
+         Opcode === `BNEZ | Opcode === `BLTZ | 
+         Opcode === `BGEZ | Opcode === `SEQ | 
+         Opcode === `SLT | Opcode === `SLE);
 
-    assign InvBProto = (Opcode == `ANDNI);
+    assign InvBProto = (Opcode === `ANDNI);
 
     assign Halt = (Opcode === `HALT) ? 1'b1 : 1'b0;
 

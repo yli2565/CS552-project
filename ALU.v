@@ -39,12 +39,22 @@ module ALU (
 );
 
     // Input preprocessing
+    wire [15:0] NegOprA;
+
     wire [15:0] A;
     wire [15:0] B;
 
     wire is8000 = (OprA === 16'h8000);
 
-    assign A = NegA ? (~OprA + 1) : SLBIshift8 ? (OprA << 8) : OprA;
+    
+    Adder16 NegOprA_(
+        .InputA(~OprA),
+        .InputB(16'b0),
+        .CarryIn(1'b1),
+        .Sum(NegOprA),
+        .CarryOut()
+    );
+    assign A = NegA ? NegOprA : SLBIshift8 ? (OprA << 8) : OprA;
     assign B = InvB ? ~OprB : OprB;
 
     // Operation results
