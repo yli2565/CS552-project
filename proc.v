@@ -10,6 +10,7 @@
 `include "BrchCnd.v"
 `include "ALU_Operation.v"
 `include "ALU.v"
+`include "Adder16.v"
 `default_nettype none
 module proc (/*AUTOARG*/
    // Outputs
@@ -105,8 +106,13 @@ module proc (/*AUTOARG*/
 
    MUX_2x16 PCMux(.out(PCNext), .in0(PCBasedBrchOrJmpTarget), .in1(RegBasedAddr), .ctrl(ALUJmp));
 
-   assign PCplus2 = PC + 16'd2; // TODO: replace this
-
+   Adder16 PCAdder(
+      .InputA(PC),
+      .InputB(16'd2),
+      .CarryIn(1'b0),
+      .Sum(PCplus2),
+      .CarryOut()
+   );
    always @(posedge clk or posedge rst) begin
       if (rst) begin
          PC <= 16'b0;
