@@ -56,6 +56,32 @@
 `define SLE     5'b11110
 `define SCO     5'b11111
 
+
+// Basic Operations
+`define ALU_NONE    4'b0000    // No operation
+`define ALU_R_ROT   4'b0001    // Not determined rotate operation
+`define ALU_R_ARITH 4'b0010    // Not determined arithmetic operation
+`define ALU_ADD     4'b0110    // Addition
+`define ALU_XOR     4'b0101    // XOR operation
+`define ALU_AND     4'b0011    // AND operation
+`define ALU_OR      4'b0100    // OR operation
+
+// Compare Operations
+`define ALU_CMP     4'b0111    // Compare operation
+`define ALU_CMP_0_A 4'b0111    // Compare 0 minus A
+`define ALU_CMP_B_A 4'b0111    // Compare B minus A
+
+// Shift/Rotate Operations
+`define ALU_ROL     4'b1000    // Rotate left
+`define ALU_SLL     4'b1001    // Shift left logical
+`define ALU_ROR     4'b1010    // Rotate right
+`define ALU_SRL     4'b1011    // Shift right logical
+
+// Special Operations
+`define ALU_BYPASS  4'b1101    // Bypass Immediate (B)
+`define ALU_INV     4'b1100    // Bit inversion
+
+
 module InstructionDecoder (
     output wire [1:0] MemRW,
     output wire ALUJmp,
@@ -123,27 +149,42 @@ module InstructionDecoder (
 
     assign ZeroExt = (Opcode == `XORI || Opcode == `ANDNI || Opcode == `SLBI);
 
-    assign ALUOperationProto = 
-        (Opcode == `JR || Opcode == `JALR || 
-         Opcode == `ADDI || Opcode == `SUBI || 
-         Opcode == `ST || Opcode == `LD || 
-         Opcode == `STU) ? 4'b0110 :
-        (Opcode == `XORI) ? 4'b0101 :
-        (Opcode == `ANDNI) ? 4'b0011 :
-        (Opcode == `BEQZ || Opcode == `BNEZ || 
-         Opcode == `BLTZ || Opcode == `BGEZ || 
-         Opcode == `SEQ || Opcode == `SLT || 
-         Opcode == `SLE || Opcode == `SCO) ? 4'b0111 :
-        (Opcode == `SLBI) ? 4'b0100 :
-        (Opcode == `ROLI) ? 4'b1000 :
-        (Opcode == `SLLI) ? 4'b1001 :
-        (Opcode == `RORI) ? 4'b1010 :
-        (Opcode == `SRLI) ? 4'b1011 :
-        (Opcode == `LBI) ? 4'b1101 :
-        (Opcode == `BTR) ? 4'b1100 :
-        (Opcode == `ROL) ? 4'b0001 :
-        (Opcode == `ADD) ? 4'b0010 :
-        4'b0000;
+assign ALUOperationProto = 
+    // Addition operations
+    (Opcode == `JR || Opcode == `JALR || 
+     Opcode == `ADDI || Opcode == `SUBI || 
+     Opcode == `ST || Opcode == `LD || 
+     Opcode == `STU) ? `ALU_ADD :
+    
+    // Bitwise operations
+    (Opcode == `XORI) ? `ALU_XOR :
+    (Opcode == `ANDNI) ? `ALU_AND :
+    
+    // Compare operations
+    (Opcode == `BEQZ || Opcode == `BNEZ || 
+     Opcode == `BLTZ || Opcode == `BGEZ || 
+     Opcode == `SEQ || Opcode == `SLT || 
+     Opcode == `SLE || Opcode == `SCO) ? `ALU_CMP :
+    
+    // OR operation (for SLBI)
+    (Opcode == `SLBI) ? `ALU_OR :
+    
+    // Shift and rotate operations
+    (Opcode == `ROLI) ? `ALU_ROL :
+    (Opcode == `SLLI) ? `ALU_SLL :
+    (Opcode == `RORI) ? `ALU_ROR :
+    (Opcode == `SRLI) ? `ALU_SRL :
+    
+    // Special operations
+    (Opcode == `LBI) ? `ALU_BYPASS :
+    (Opcode == `BTR) ? `ALU_INV :
+    
+    // Not determined operations
+    (Opcode == `ROL) ? `ALU_R_ROT :
+    (Opcode == `ADD) ? `ALU_R_ARITH :
+    
+    // Default: No operation
+    `ALU_NONE;
 
     assign RegSrc = 
         (Opcode == `JAL || Opcode == `JALR) ? 2'b00 :
