@@ -39,6 +39,9 @@ module ALU (
     // Input preprocessing
     wire [15:0] A;
     wire [15:0] B;
+
+    wire is8000 = (OprA === 16'h8000);
+
     assign A = NegA ? (~OprA + 1) : SLBIshift8 ? (OprA << 8) : OprA;
     assign B = InvB ? ~OprB : OprB;
 
@@ -73,9 +76,12 @@ module ALU (
     // Flag calculations
     wire [15:0] flag_result = (ALUOperation === `ALU_CMP) ? add_result : ALUOut;
     
+    wire ASign = (is8000 & NegA) ? 1'b0 : A[15]; // Consider negate of 0x8000 as positive
+
     assign SF = (ALUOperation === `ALU_NONE) ? 1'bz : flag_result[15];
     assign ZF = (ALUOperation === `ALU_NONE) ? 1'bz : (flag_result === 16'b0);
-    assign OF = (ALUOperation === `ALU_NONE) ? 1'bz : (A[15] & B[15] & ~flag_result[15]) | (~A[15] & ~B[15] & flag_result[15]);
+    assign OF = (ALUOperation === `ALU_NONE) ? 1'bz : 
+    (ASign & B[15] & ~flag_result[15]) | (~ASign & ~B[15] & flag_result[15]);
 
     wire [16:0] extended_sum;
     assign extended_sum = {1'b0,A} + {1'b0,B};
