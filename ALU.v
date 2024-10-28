@@ -23,6 +23,7 @@
 `define ALU_INV     4'b1100    // Bit inversion
 
 `include "Shifter.v"
+`include "Adder16.v"
 module ALU (
     output wire [15:0] ALUOut,
     output wire SF,
@@ -49,7 +50,15 @@ module ALU (
     // Operation results
     wire [3:0] SRAmount = B[3:0]; // Shift/Rotate amount
 
-    wire [15:0] add_result = A + B;
+    wire [15:0] add_result;
+    wire adderCarryOut;
+    Adder16 Adder16_(
+        .InputA(A),
+        .InputB(B),
+        .CarryIn(1'b0),
+        .Sum(add_result),
+        .CarryOut(adderCarryOut)
+    );
     wire [15:0] xor_result = A ^ B;
     wire [15:0] and_result = A & B;
     wire [15:0] or_result = A | B;
@@ -60,10 +69,6 @@ module ALU (
         .operation(ALUOperation[1:0]),
         .dataOut(shifter_result)
     );
-    // wire [15:0] rol_result = A << SRAmount | A >> (16 - SRAmount);
-    // wire [15:0] sll_result = A << SRAmount;
-    // wire [15:0] ror_result = A >> SRAmount | A << (16 - SRAmount);
-    // wire [15:0] srl_result = A >> SRAmount;
     wire [15:0] inv_result = {A[0],A[1],A[2],A[3],A[4],A[5],A[6],A[7],A[8],A[9],A[10],A[11],A[12],A[13],A[14],A[15]};
 
     // Main ALU output multiplexer
@@ -72,10 +77,6 @@ module ALU (
         (ALUOperation === `ALU_XOR)    ? xor_result :
         (ALUOperation === `ALU_AND)    ? and_result :
         (ALUOperation === `ALU_OR)     ? or_result :
-        // (ALUOperation === `ALU_ROL)    ? rol_result :
-        // (ALUOperation === `ALU_SLL)    ? sll_result :
-        // (ALUOperation === `ALU_ROR)    ? ror_result :
-        // (ALUOperation === `ALU_SRL)    ? srl_result :
         (ALUOperation === `ALU_ROL)    ? shifter_result :
         (ALUOperation === `ALU_SLL)    ? shifter_result :
         (ALUOperation === `ALU_ROR)    ? shifter_result :
@@ -95,8 +96,6 @@ module ALU (
     assign OF = (ALUOperation === `ALU_NONE) ? 1'bz : 
     (ASign & B[15] & ~flag_result[15]) | (~ASign & ~B[15] & flag_result[15]);
 
-    wire [16:0] extended_sum;
-    assign extended_sum = {1'b0,A} + {1'b0,B};
-    assign CF = (ALUOperation === `ALU_NONE) ? 1'bz : extended_sum[16];
+    assign CF = (ALUOperation === `ALU_NONE) ? 1'bz : adderCarryOut;
 
 endmodule
