@@ -125,16 +125,16 @@ module proc_hier_bench();
    // Edit the example below. You must change the signal
    // names on the right hand side
     
-   assign PC = DUT.p0.PC;
+   assign PC = DUT.p0.fetch_.PC;
    assign Inst = DUT.p0.Instr;
    
    assign RegWrite = DUT.p0.RegWrt;
    // Is register being written, one bit signal (1 means yes, 0 means no)
    
-   assign WriteRegister = DUT.p0.regFile_.writeRegSel;
+   assign WriteRegister = DUT.p0.decode_.regFile_.writeRegSel;
    // The name of the register being written to. (3 bit signal)
 
-   assign WriteData = DUT.p0.regFile_.writeData;
+   assign WriteData = DUT.p0.decode_.regFile_.writeData;
    // Data being written to the register. (16 bits)
    
    assign MemRead =  DUT.p0.MemRW[1];
@@ -149,7 +149,7 @@ module proc_hier_bench();
    assign MemData = DUT.p0.Rt;
    // Data to be written to memory for memory writes (16 bits)
    
-   assign Halt = DUT.p0.Dmem.createdump;
+   assign Halt = DUT.p0.memory_.Dmem.createdump;
    // Is processor halted (1 bit signal)
    
    /* Add anything else you want here */
@@ -162,14 +162,14 @@ module proc_hier_bench();
    generate
       for(i = 0; i < 16; i = i + 1) begin : connect_regs
          // Connect all bits of register i
-         assign RegFileData[0][i] = DUT.p0.regFile_.reg_array_0.dff_array[i].state;
-         assign RegFileData[1][i] = DUT.p0.regFile_.reg_array_1.dff_array[i].state;
-         assign RegFileData[2][i] = DUT.p0.regFile_.reg_array_2.dff_array[i].state;
-         assign RegFileData[3][i] = DUT.p0.regFile_.reg_array_3.dff_array[i].state;
-         assign RegFileData[4][i] = DUT.p0.regFile_.reg_array_4.dff_array[i].state;
-         assign RegFileData[5][i] = DUT.p0.regFile_.reg_array_5.dff_array[i].state;
-         assign RegFileData[6][i] = DUT.p0.regFile_.reg_array_6.dff_array[i].state; 
-         assign RegFileData[7][i] = DUT.p0.regFile_.reg_array_7.dff_array[i].state;
+         assign RegFileData[0][i] = DUT.p0.decode_.regFile_.reg_array_0.dff_array[i].state;
+         assign RegFileData[1][i] = DUT.p0.decode_.regFile_.reg_array_1.dff_array[i].state;
+         assign RegFileData[2][i] = DUT.p0.decode_.regFile_.reg_array_2.dff_array[i].state;
+         assign RegFileData[3][i] = DUT.p0.decode_.regFile_.reg_array_3.dff_array[i].state;
+         assign RegFileData[4][i] = DUT.p0.decode_.regFile_.reg_array_4.dff_array[i].state;
+         assign RegFileData[5][i] = DUT.p0.decode_.regFile_.reg_array_5.dff_array[i].state;
+         assign RegFileData[6][i] = DUT.p0.decode_.regFile_.reg_array_6.dff_array[i].state; 
+         assign RegFileData[7][i] = DUT.p0.decode_.regFile_.reg_array_7.dff_array[i].state;
       end
    endgenerate
 endmodule

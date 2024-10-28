@@ -11,6 +11,12 @@
 `include "ALU_Operation.v"
 `include "ALU.v"
 `include "Adder16.v"
+
+`include "fetch.v"
+`include "decode.v"
+`include "execute.v"
+`include "memory.v"
+`include "wb.v"
 `default_nettype none
 module proc (/*AUTOARG*/
    // Outputs
@@ -35,158 +41,61 @@ module proc (/*AUTOARG*/
    
    /* your code here -- should include instantiations of fetch, decode, execute, mem and wb modules */
 
-   // Main Control signals
-   // wire MemWrt;
-   wire [1:0] MemRW;
-   wire ALUJmp;
-   wire ImmSrc;
-   wire RegWrt;
-   wire [1:0] BSrc;
-   wire ZeroExt;
-   wire [1:0] RegSrc;
-   wire [1:0] RegDst;
-   // ALU control signals
-   wire [5:0] ALUOpr;
-   wire [3:0] ALUOperation;
-   wire SLBIshift8;
-   wire NegA;
-   wire InvB;
-   // BrchCnd control signals
-   wire [3:0] BrchCtrl;
+    // Interconnect wires
+    wire [15:0] Instr, PCplus2, Rs, Rt, ALUOut, MemOut, WrtData;
+    wire [15:0] I1_Imm, I2_Imm, J_Imm;
+    wire [15:0] CmpResult;
+    wire [1:0] MemRW, BSrc, RegSrc, RegDst;
+    wire [5:0] ALUOpr;
+    wire [3:0] BrchCtrl;
+    wire ALUJmp, ImmSrc, RegWrt, ZeroExt, SLBIshift8;
+    wire SF, ZF, OF, CF, BrchOrJmpSig, Halt;
 
-   // extra halt signal
-   wire Halt;
+    // PCBased address calculation
+    wire [15:0] PCDist = ImmSrc ? J_Imm : I1_Imm;
+    wire [15:0] PCBasedAddr = PCplus2 + PCDist;
 
-   // Data signals
-   wire [15:0] Instr;
+    // Module instantiations
+    fetch fetch_ (
+        .clk(clk), .rst(rst), .Halt(Halt), .ALUJmp(ALUJmp),
+        .BrchOrJmpSig(BrchOrJmpSig), .PCBasedAddr(PCBasedAddr),
+        .RegBasedAddr(ALUOut), .Instr(Instr), .PCplus2(PCplus2)
+    );
 
-   // PC related
-   reg [15:0] PC;
-   wire [15:0] PCplus2;
-   wire [15:0] PCDist;
-   wire [15:0] PCBasedAddr;
-   wire [15:0] PCBasedBrchOrJmpTarget;
-   wire [15:0] RegBasedAddr;
-   wire [15:0] PCNext;   
+    decode decode_ (
+        .clk(clk), .rst(rst), .Instr(Instr), .RegWrt(RegWrt),
+        .WrtData(WrtData), .Rs(Rs), .Rt(Rt),
+        .I1_Imm(I1_Imm), .I2_Imm(I2_Imm), .J_Imm(J_Imm),
+        .MemRW(MemRW), .ALUJmp(ALUJmp), .ImmSrc(ImmSrc),
+        .ZeroExt(ZeroExt), .BSrc(BSrc), .RegSrc(RegSrc),
+        .RegDst(RegDst), .ALUOpr(ALUOpr), .BrchCtrl(BrchCtrl),
+        .SLBIshift8(SLBIshift8), .Halt(Halt)
+    );
 
-   // Branch related
-   wire SF;
-   wire ZF;
-   wire OF;
-   wire CF;
-   wire BrchOrJmpSig; // branch switch
-   wire [15:0] CmpResult; // Write to Rd
+    execute execute_ (
+        .Rs(Rs), .Rt(Rt), .I1_Imm(I1_Imm), .I2_Imm(I2_Imm),
+        .BSrc(BSrc), .ALUOpr(ALUOpr), .Instr1_0(Instr[1:0]),
+        .SLBIshift8(SLBIshift8), .ALUOut(ALUOut),
+        .SF(SF), .ZF(ZF), .OF(OF), .CF(CF)
+    );
 
-   // ALU related
-   wire [15:0] Rs;
-   wire [15:0] Rt;
-   wire [15:0] Imm5;
-   wire [15:0] Imm8;
-   wire [15:0] OprB;
-   wire cin;
+    memory memory_ (
+        .clk(clk), .rst(rst), .Halt(Halt), .MemRW(MemRW),
+        .ALUOut(ALUOut), .Rt(Rt), .BrchCtrl(BrchCtrl),
+        .SF(SF), .ZF(ZF), .OF(OF), .CF(CF),
+        .MemOut(MemOut), .CmpResult(CmpResult),
+        .BrchOrJmpSig(BrchOrJmpSig)
+    );
 
-   wire [15:0] ALUOut;
-   // wire SF;
-   // wire ZF;
-   // wire OF;
-   // wire CF;
+    wb wb_ (
+        .RegSrc(RegSrc), .PCplus2(PCplus2), .MemOut(MemOut),
+        .ALUOut(ALUOut), .CmpResult(CmpResult), .WrtData(WrtData)
+    );
 
-   
-   // Mem related
-   wire [15:0] MemOut;
-
-   // WB related
-   wire [15:0] WrtData;
-   wire [2:0] WrtReg;
-
-   // IF stage
-   assign RegBasedAddr = ALUOut;
-
-   MUX_2x16 BranchOrJmpMux(.out(PCBasedBrchOrJmpTarget), .in0(PCplus2), .in1(PCBasedAddr), .ctrl(BrchOrJmpSig));
-
-   MUX_2x16 PCMux(.out(PCNext), .in0(PCBasedBrchOrJmpTarget), .in1(RegBasedAddr), .ctrl(ALUJmp));
-
-   Adder16 PCAdder(
-      .InputA(PC),
-      .InputB(16'd2),
-      .CarryIn(1'b0),
-      .Sum(PCplus2),
-      .CarryOut()
-   );
-   always @(posedge clk or posedge rst) begin
-      if (rst) begin
-         PC <= 16'b0;
-      end
-      else if (!Halt) begin
-         PC <= PCNext;
-      end
-   end
-
-   memory2c Imem (.data_out(Instr), .data_in(16'b0), .addr(PC), .enable(~Halt), .wr(1'b0), .createdump(Halt), .clk(clk), .rst(rst));
-
-   // ID stage
-
-   wire [4:0] Instr15_11 = Instr[15:11];
-   wire [2:0] Instr10_8 = Instr[10:8];
-   wire [2:0] Instr7_5 = Instr[7:5];
-   wire [2:0] Instr4_2 = Instr[4:2];
-   wire [4:0] Instr4_0 = Instr[4:0];
-   wire [7:0] Instr7_0 = Instr[7:0];
-   wire [10:0] Instr10_0 = Instr[10:0];
-   wire [1:0] Instr1_0 = Instr[1:0];
-
-   InstructionDecoder InstructionDecoder_(.MemRW(MemRW),.ALUJmp(ALUJmp),.SLBIshift8(SLBIshift8), .BrchCtrl(BrchCtrl), .ImmSrc(ImmSrc),.RegWrt(RegWrt),.BSrc(BSrc),.ZeroExt(ZeroExt),.ALUOpr(ALUOpr),.RegSrc(RegSrc),.RegDst(RegDst),.Halt(Halt),.Opcode(Instr15_11));
-
-   // RegFile part
-   regFile regFile_(.read1Data(Rs), .read2Data(Rt), .writeData(WrtData), .writeEn(RegWrt), .writeRegSel(WrtReg), .read1RegSel(Instr10_8), .read2RegSel(Instr7_5), .clk(clk), .rst(rst));
-
-   MUX_4x3 WrtRegMux(.out(WrtReg), .in0(Instr7_5), .in1(Instr10_8), .in2(Instr4_2), .in3(3'b111), .ctrl(RegDst));
-
-   // ImmGen part
-   wire [15:0] I1_Imm;
-   wire [15:0] I2_Imm;
-   wire [15:0] J_Imm;
-   // select signed extend or zero extend
-   MUX_2x16 I1_Imm_Mux(.out(I1_Imm), .in0({{8{Instr7_0[7]}}, Instr7_0}), .in1({8'b0, Instr7_0}), .ctrl(ZeroExt));
-   MUX_2x16 I2_Imm_Mux(.out(I2_Imm), .in0({{11{Instr4_0[4]}}, Instr4_0}), .in1({11'b0, Instr4_0}), .ctrl(ZeroExt));
-   // J is always signed extend
-   assign J_Imm={{5{Instr10_0[10]}}, Instr10_0};
-
-   // EX stage
-
-   wire [15:0] BrchDist;
-   wire [15:0] JTypeDist;
-
-   // calculate PCBasedAddr
-   assign BrchDist = I1_Imm;
-   assign JTypeDist = J_Imm;
-   MUX_2x16 PCDist_Mux(.out(PCDist), .in0(BrchDist), .in1(JTypeDist), .ctrl(ImmSrc));
-
-   assign PCBasedAddr = PCplus2 + PCDist;
-
-   // OprB select
-   assign Imm5=I2_Imm;
-   assign Imm8=I1_Imm;
-
-   MUX_4x16 OprB_Mux(.out(OprB), .in0(Rt), .in1(Imm5), .in2(Imm8), .in3(16'b0), .ctrl(BSrc));
-
-   // ALU Control part
-   ALU_Operation ALU_Operation_(.ALUOperation(ALUOperation), .NegA(NegA), .InvB(InvB), .ALUOpr(ALUOpr), .OpcodeExtention(Instr1_0));
-
-   // ALU part   
-   ALU ALU_(.ALUOut(ALUOut), .SF(SF), .ZF(ZF), .OF(OF), .CF(CF), .OprA(Rs), .OprB(OprB), .ALUOperation(ALUOperation), .SLBIshift8(SLBIshift8), .NegA(NegA), .InvB(InvB));
-
-   // MEM stage
-
-   // Branch Control part
-   BrchCnd BrchCnd_(.BrchOrJmpSig(BrchOrJmpSig), .CmpResult(CmpResult), .BrchCtrl(BrchCtrl), .SF(SF), .ZF(ZF), .OF(OF), .CF(CF));
-
-   // Main memory part
-   memory2c Dmem (.data_out(MemOut), .data_in(Rt), .addr(ALUOut), .enable(~Halt & (MemRW[1]|MemRW[0])), .wr(MemRW[0]), .createdump(Halt), .clk(clk), .rst(rst));
-
-   // WB stage
-   MUX_4x16 WrtData_Mux(.out(WrtData), .in0(PCplus2), .in1(MemOut), .in2(ALUOut), .in3(CmpResult), .ctrl(RegSrc));
-
+    // Error handling (you can expand this based on your needs)
+    always @(*) begin
+        err = 1'b0;
+    end
 endmodule // proc
 `default_nettype wire
 // DUMMY LINE FOR REV CONTROL :0:
