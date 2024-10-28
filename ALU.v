@@ -22,6 +22,7 @@
 `define ALU_BYPASS  4'b1101    // Bypass Immediate (B)
 `define ALU_INV     4'b1100    // Bit inversion
 
+`include "Shifter.v"
 module ALU (
     output wire [15:0] ALUOut,
     output wire SF,
@@ -52,10 +53,17 @@ module ALU (
     wire [15:0] xor_result = A ^ B;
     wire [15:0] and_result = A & B;
     wire [15:0] or_result = A | B;
-    wire [15:0] rol_result = A << SRAmount | A >> (16 - SRAmount);
-    wire [15:0] sll_result = A << SRAmount;
-    wire [15:0] ror_result = A >> SRAmount | A << (16 - SRAmount);
-    wire [15:0] srl_result = A >> SRAmount;
+    wire [15:0] shifter_result;
+    Shifter Shifter_(
+        .dataIn(A),
+        .shiftAmount(SRAmount),
+        .operation(ALUOperation[1:0]),
+        .dataOut(shifter_result)
+    );
+    // wire [15:0] rol_result = A << SRAmount | A >> (16 - SRAmount);
+    // wire [15:0] sll_result = A << SRAmount;
+    // wire [15:0] ror_result = A >> SRAmount | A << (16 - SRAmount);
+    // wire [15:0] srl_result = A >> SRAmount;
     wire [15:0] inv_result = {A[0],A[1],A[2],A[3],A[4],A[5],A[6],A[7],A[8],A[9],A[10],A[11],A[12],A[13],A[14],A[15]};
 
     // Main ALU output multiplexer
@@ -64,10 +72,14 @@ module ALU (
         (ALUOperation === `ALU_XOR)    ? xor_result :
         (ALUOperation === `ALU_AND)    ? and_result :
         (ALUOperation === `ALU_OR)     ? or_result :
-        (ALUOperation === `ALU_ROL)    ? rol_result :
-        (ALUOperation === `ALU_SLL)    ? sll_result :
-        (ALUOperation === `ALU_ROR)    ? ror_result :
-        (ALUOperation === `ALU_SRL)    ? srl_result :
+        // (ALUOperation === `ALU_ROL)    ? rol_result :
+        // (ALUOperation === `ALU_SLL)    ? sll_result :
+        // (ALUOperation === `ALU_ROR)    ? ror_result :
+        // (ALUOperation === `ALU_SRL)    ? srl_result :
+        (ALUOperation === `ALU_ROL)    ? shifter_result :
+        (ALUOperation === `ALU_SLL)    ? shifter_result :
+        (ALUOperation === `ALU_ROR)    ? shifter_result :
+        (ALUOperation === `ALU_SRL)    ? shifter_result :
         (ALUOperation === `ALU_BYPASS) ? B :
         (ALUOperation === `ALU_INV)    ? inv_result :
         (ALUOperation === `ALU_CMP)    ? 16'bz :
