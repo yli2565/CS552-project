@@ -13,7 +13,7 @@ module Shifter (
     assign stage0 = 
         (operation == 2'b00) ? (shiftAmount[3] ? {dataIn[7:0], dataIn[15:8]} : dataIn) :
         (operation == 2'b01) ? (shiftAmount[3] ? {dataIn[7:0], 8'b0} : dataIn) :
-        (operation == 2'b10) ? (shiftAmount[3] ? {dataIn[15:8], dataIn[7:0]} : dataIn) :
+        (operation == 2'b10) ? (shiftAmount[3] ? {dataIn[7:0], dataIn[15:8]} : dataIn) :
                               (shiftAmount[3] ? {8'b0, dataIn[15:8]} : dataIn);
 
     assign stage1 = 
